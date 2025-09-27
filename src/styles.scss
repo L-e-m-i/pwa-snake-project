@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+$background-color: #303030;
+html, body{
+    background-color: $background-color;
+    height: 100%;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}

@@ -1,0 +1,28 @@
+:host {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+mat-nav-list {
+  width: 300px;
+  background-color: #424242;
+  border-radius: 8px;
+
+
+  a {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    color: white;
+    height: 100%;
+    font-size: 3rem;
+    text-align: center;
+  }
+  a:hover{
+    background-color: #616161;
+  }
+}
+
