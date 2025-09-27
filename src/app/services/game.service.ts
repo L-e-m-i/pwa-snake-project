@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { SnakeService, GameLevel } from './snake.service';
 import { LevelConfigService } from './level-config.service';
+import { SwipeDirection } from './gesture.service';
 
 export interface GameState {
 	score: number;
@@ -99,7 +100,6 @@ export class GameService {
 					break;
 			}
 
-
 			if (this.isActive()) {
 				this.gameLoopId = setTimeout(gameLoop, config.speed);
 			}
@@ -113,13 +113,13 @@ export class GameService {
 			event.preventDefault();
 			this.pauseGame();
 			return;
-		}else{
-            if (event.key === ' ' && !this.state().isRunning) {
-                event.preventDefault();
-                this.startGame(this.state().level);
-                return;
-            }
-        }
+		} else {
+			if (event.key === ' ' && !this.state().isRunning) {
+				event.preventDefault();
+				this.startGame(this.state().level);
+				return;
+			}
+		}
 
 		if (!this.isActive()) return;
 
@@ -143,9 +143,19 @@ export class GameService {
 		const direction = keyMap[event.key];
 		if (direction) {
 			event.preventDefault();
-			this.snakeService.changeDirection(direction);
+			this.handleDirectionChange(direction);
 			this.directionChanged.set(true);
 		}
+	}
+
+	handleSwipe(direction: SwipeDirection): void {
+		if (!this.isActive() || this.directionChanged()) return;
+		this.handleDirectionChange(direction);
+	}
+
+	private handleDirectionChange(direction: 'up' | 'down' | 'left' | 'right'): void {
+		this.snakeService.changeDirection(direction);
+		this.directionChanged.set(true);
 	}
 
 	private stopGameLoop(): void {
