@@ -1,0 +1,143 @@
+$primary-color: #4caf50;
+$secondary-color: #f44336;
+
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 100vh;
+  color: white;
+}
+
+#game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.game-info {
+  text-align: center;
+}
+
+.game-info h2 {
+  margin: 0 0 10px 0;
+  color: $primary-color;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.controls button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background-color: $primary-color;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.controls button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.controls button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+#game-board {
+  display: grid;
+  gap: 1px;
+  background-color: #333;
+  border: 2px solid $primary-color;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background-color: #2a2a2a;
+  border-radius: 2px;
+  transition: all 0.1s ease;
+}
+
+.cell.snake {
+  background-color: $primary-color;
+}
+
+.cell.snake-head {
+  background-color: #66bb6a;
+  border: 2px solid #2e7d32;
+  box-sizing: border-box;
+}
+
+.cell.food {
+  background-color: $secondary-color;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+.cell.obstacle {
+  background-color: #795548;
+  border: 1px solid #5d4037;
+  box-sizing: border-box;
+}
+
+.game-over {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid $secondary-color;
+  z-index: 1000;
+}
+
+.game-over h3 {
+  margin: 0 0 15px 0;
+  color: $secondary-color;
+}
+
+.game-over button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background-color: $primary-color;
+  color: white;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.game-over button:hover {
+  background-color: #45a049;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+:host:focus {
+  outline: 2px solid $primary-color;
+  outline-offset: 4px;
+}
