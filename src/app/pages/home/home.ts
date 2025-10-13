@@ -9,9 +9,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     RouterLink,
     
   ],
-  // template: `<p>home works!</p>`,
-  styleUrl: './home.component.css',
-  templateUrl: './home.component.html',
+  styleUrl: './home.scss',
+  templateUrl: './home.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent { }
+export class Home { }

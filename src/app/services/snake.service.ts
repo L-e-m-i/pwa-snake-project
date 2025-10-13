@@ -1,11 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { GameService } from './game.service';
+import { Position } from '../models/position';
 
 
-export interface Position {
-  x: number;
-  y: number;
-}
+
 
 export interface Snake {
   body: Position[];
@@ -24,7 +22,7 @@ export interface GameEvent {
 export class SnakeService {
 
 
-  private snake = signal<Snake>({
+  public snake = signal<Snake>({
     body: [{ x: 5, y: 10 }, { x: 5, y: 11 }, { x: 5, y: 12 }],
     direction: 'right'
   })
@@ -32,10 +30,16 @@ export class SnakeService {
   private food = signal<Position>({ x: 5, y: 5 });
   private obstacles = signal<Position[]>([]);
 
+  setObstacles(obstacles: Position[]): void {
+    this.obstacles.set(obstacles);
+  }
+
+  setFood(position: Position): void {
+    this.food.set(position);
+  }
 
   readonly currentSnake = this.snake.asReadonly();
-  readonly currentFood = this.food.asReadonly();
-  readonly currentObstacles = this.obstacles.asReadonly();
+  
   readonly snakeHead = computed(() => this.snake().body[0]);
 
 
@@ -53,9 +57,10 @@ export class SnakeService {
       case 'right':
         head.x++; break;
     }
-
+    console.log('Moving snake to:', head);
     if(level !== 'easy'){
       if(head.x < 0 || head.x >= boardSize.width || head.y < 0 || head.y >= boardSize.height){
+        console.log('Collision with wall at:', head);
         return {type: 'collision'}; 
       }
     }else{
@@ -67,11 +72,14 @@ export class SnakeService {
       return {type: 'collision'};
     }
 
+    if(this.obstacles().some(obstacle => obstacle.x === head.x && obstacle.y === head.y)){
+      return {type: 'collision'};
+    }
+
     const newBody = [head, ...currentSnake.body];
     let gameEvent: GameEvent = { type: 'move' };
     const currentFood = this.food();
     if (head.x === currentFood.x && head.y === currentFood.y) {
-      this.generateFood(boardSize, newBody);
       gameEvent = { type: 'food-eaten' };
     } else {
       newBody.pop();
@@ -98,18 +106,6 @@ export class SnakeService {
       direction: 'up'
     });
     this.food.set({ x: 5, y: 5 });
-  }
-
-  private generateFood(boardSize: { width: number; height: number }, snakeBody: Position[]): void {
-    let newFood: Position;
-    do {
-      newFood = {
-        x: Math.floor(Math.random() * boardSize.width),
-        y: Math.floor(Math.random() * boardSize.height)
-      };
-    } while (snakeBody.some(segment => segment.x === newFood.x && segment.y === newFood.y));
-    
-    this.food.set(newFood);
   }
 
 }

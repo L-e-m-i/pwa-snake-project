@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { SnakeService, GameLevel } from './snake.service';
 import { LevelConfigService } from './level-config.service';
 import { SwipeDirection } from './gesture.service';
+import { Position } from '../models/position';
 
 export interface GameState {
 	score: number;
@@ -15,8 +16,56 @@ export interface GameState {
 	providedIn: 'root',
 })
 export class GameService {
-	private snakeService = inject(SnakeService);
-	private levelConfigService = inject(LevelConfigService);
+	constructor(private snakeService: SnakeService, private levelConfigService: LevelConfigService) {}
+
+	private food = signal<Position>({ x: 5, y: 5 });
+	private obstacles = signal<Position[]>([]);
+
+	initializeObstacles(boardSize: { width: number; height: number }, level: GameLevel): void {
+		console.log('Initializing obstacles for level:', level);
+		if (level !== 'hard') {
+			this.obstacles.set([]);
+			this.snakeService.setObstacles([]);
+			return;
+		}
+		const newObstacles: Position[] = [];
+		const obstacleCount = 10;
+		while (newObstacles.length < obstacleCount) {
+			const obstacle = {
+				x: Math.floor(Math.random() * boardSize.width),
+				y: Math.floor(Math.random() * boardSize.height),
+			};
+
+			if (
+				!newObstacles.some((o) => o.x === obstacle.x && o.y === obstacle.y) &&
+				!this.snakeService
+					.snake()
+					.body.some((segment) => segment.x === obstacle.x && segment.y === obstacle.y) &&
+				!(this.food().x === obstacle.x && this.food().y === obstacle.y)
+			) {
+				newObstacles.push(obstacle);
+			}
+		}
+		console.log('Generated obstacles:', newObstacles);
+		this.snakeService.setObstacles(newObstacles);
+		this.obstacles.set(newObstacles);
+	}
+
+	generateFood(boardSize: { width: number; height: number }, snakeBody: Position[]): void {
+		let newFood: Position;
+		do {
+			newFood = {
+				x: Math.floor(Math.random() * boardSize.width),
+				y: Math.floor(Math.random() * boardSize.height),
+			};
+		} while (snakeBody.some((segment) => segment.x === newFood.x && segment.y === newFood.y));
+
+		this.food.set(newFood);
+		this.snakeService.setFood(newFood);
+	}
+
+	readonly currentFood = this.food.asReadonly();
+	readonly currentObstacles = this.obstacles.asReadonly();
 
 	private gameState = signal<GameState>({
 		score: 0,
@@ -36,10 +85,33 @@ export class GameService {
 
 	readonly levelConfig = computed(() => this.levelConfigService.getLevelConfig(this.state().level));
 
+	initializeGame(level: GameLevel): void {
+		console.log('Initializing game at level:', level);
+		this.gameState.set({
+			score: 0,
+			level,
+			isRunning: false,
+			isGameOver: false,
+			isPaused: false,
+		});
+		this.directionChanged.set(false);
+		this.snakeService.reset();
+		const initialFood: Position = { x: 5, y: 5 };
+		this.food.set(initialFood);
+		this.snakeService.setFood(initialFood);
+	}
+
 	startGame(level: GameLevel): void {
 		this.stopGameLoop();
+		if (this.obstacles().length === 0) {
+			this.initializeObstacles(this.levelConfig().boardSize, level);
+		}
 		this.snakeService.reset();
+		const initialFood: Position = { x: 5, y: 5 };
+        this.food.set(initialFood);
+        this.snakeService.setFood(initialFood);
 
+		console.log('Starting game at level:', level);
 		this.gameState.set({
 			score: 0,
 			level,
@@ -47,8 +119,9 @@ export class GameService {
 			isGameOver: false,
 			isPaused: false,
 		});
-
 		this.directionChanged.set(false);
+
+		this.snakeService.setFood({ x: 5, y: 5 });
 		this.startGameLoop();
 	}
 
@@ -64,12 +137,27 @@ export class GameService {
 
 	gameOver(): void {
 		this.stopGameLoop();
+		this.obstacles.set([]);
+		this.snakeService.setObstacles([]);
 		this.gameState.update((state) => ({
 			...state,
 			isRunning: false,
 			isGameOver: true,
 			isPaused: false,
 		}));
+	}
+
+	resetGame(): void {
+		this.stopGameLoop();
+		this.snakeService.reset();
+        const initialFood: Position = { x: 5, y: 5 };
+        this.food.set(initialFood);
+        this.snakeService.setFood(initialFood);
+
+        this.obstacles.set([]);
+        this.snakeService.setObstacles([]);
+
+        this.gameState.update((state) => ({ ...state, score: 0 }));
 	}
 
 	private addScore(points: number): void {
@@ -84,7 +172,6 @@ export class GameService {
 				return;
 			}
 
-			// Reset direction change flag at start of each tick
 			this.directionChanged.set(false);
 
 			const gameEvent = this.snakeService.moveSnake(config.boardSize, this.state().level);
@@ -95,6 +182,7 @@ export class GameService {
 					return;
 				case 'food-eaten':
 					this.addScore(1);
+					this.generateFood(config.boardSize, this.snakeService.snake().body);
 					break;
 				case 'move':
 					break;
@@ -126,21 +214,18 @@ export class GameService {
 		if (this.directionChanged()) return;
 
 		const keyMap: Record<string, 'up' | 'down' | 'left' | 'right'> = {
-			ArrowUp: 'up',
-			ArrowDown: 'down',
-			ArrowLeft: 'left',
-			ArrowRight: 'right',
+			arrowup: 'up',
+			arrowdown: 'down',
+			arrowleft: 'left',
+			arrowright: 'right',
 			w: 'up',
 			s: 'down',
 			a: 'left',
 			d: 'right',
-			W: 'up',
-			S: 'down',
-			A: 'left',
-			D: 'right',
 		};
 
-		const direction = keyMap[event.key];
+		const direction = keyMap[event.key.toLowerCase()];
+		
 		if (direction) {
 			event.preventDefault();
 			this.handleDirectionChange(direction);

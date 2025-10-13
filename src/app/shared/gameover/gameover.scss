@@ -1,0 +1,39 @@
+$primary-color: #4caf50;
+$secondary-color: #f44336;
+$background-color: #1a1a1a;
+
+.game-over {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid $secondary-color;
+  z-index: 1000;
+  touch-action: auto;
+}
+
+.game-over h3 {
+  margin: 0 0 15px 0;
+  color: $secondary-color;
+}
+
+.game-over button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background-color: $primary-color;
+  color: white;
+  cursor: pointer;
+  margin-top: 15px;
+  touch-action: auto;
+}
+
+.game-over button:hover {
+  background-color: #45a049;
+}

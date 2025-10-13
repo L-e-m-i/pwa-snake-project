@@ -1,0 +1,5 @@
+<div class="game-over">
+	<h3>Game Over!</h3>
+	<p>Final Score: {{ gameService.state().score }}</p>
+	<button (click)="gameService.startGame(level)">Play Again</button>
+</div>

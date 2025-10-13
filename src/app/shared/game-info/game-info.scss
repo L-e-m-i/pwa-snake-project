@@ -1,0 +1,58 @@
+$primary-color: #4caf50;
+$secondary-color: #f44336;
+$background-color: #1a1a1a;
+
+.game-info {
+  text-align: center;
+  min-width: 323px;
+}
+
+.game-info h2 {
+  margin: 0 0 0 0;
+  color: $primary-color;
+}
+
+.score-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.controls button {
+  padding: 8px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  background-color: $primary-color;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  min-height: 40px;
+  min-width: 40px;
+  touch-action: auto;
+}
+
+.controls button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.controls button:active {
+  transform: scale(0.95);
+}
+
+.controls button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}

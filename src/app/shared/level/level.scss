@@ -1,0 +1,52 @@
+$primary-color: #4caf50;
+$secondary-color: #f44336;
+$background-color: #1a1a1a;
+
+
+#game-board {
+  display: grid;
+  gap: 1px;
+  background-color: #333;
+  border: 2px solid $primary-color;
+  padding: 5px;
+  border-radius: 8px;
+  touch-action: none;
+  -webkit-touch-callout: none;
+
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  background-color: #2a2a2a;
+  border-radius: 2px;
+  transition: all 0.1s ease;
+}
+
+.cell.snake {
+  background-color: $primary-color;
+}
+
+.cell.snake-head {
+  background-color: #66bb6a;
+  border: 2px solid #2e7d32;
+  box-sizing: border-box;
+}
+
+.cell.food {
+  background-color: $secondary-color;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+.cell.obstacle {
+  background-color: #795548;
+  border: 1px solid #5d4037;
+  box-sizing: border-box;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}

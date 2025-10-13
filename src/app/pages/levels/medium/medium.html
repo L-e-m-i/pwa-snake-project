@@ -1,0 +1,9 @@
+<div id="game-container">
+	<app-game-info [level]="level" (start)="startGame()"></app-game-info>
+	<app-level [level]="level"></app-level>
+
+	@if (gameService.state().isGameOver) {
+	<app-gameover [level]="level"></app-gameover>
+    <!-- <app-leaderboard></app-leaderboard> -->
+	}
+</div>

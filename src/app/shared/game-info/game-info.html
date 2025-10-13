@@ -1,0 +1,21 @@
+<div class="game-info">
+    <div class="score-container">
+	    <h2>{{ level.charAt(0).toUpperCase() + level.slice(1) }}</h2>
+	    <div class="score">Score: {{ gameService.state().score }}</div>
+    </div>
+	<div class="controls">
+        <button (click)="exitLevel()">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <button (click)="gameService.state().isRunning ? gameService.pauseGame() : onStart()">
+			<mat-icon>{{ gameService.state().isRunning ? 
+                (gameService.state().isPaused ? 'play_arrow' : 'paused' ) : 'play_arrow' }}
+            </mat-icon>
+        </button>
+		<!-- <button (click)="onStart()" [disabled]="gameService.isActive()">Start Game</button>
+		<button (click)="gameService.pauseGame()" [disabled]="!gameService.state().isRunning">
+			{{ gameService.state().isPaused ? 'Resume' : 'Pause' }}
+		</button> -->
+	</div>
+</div>

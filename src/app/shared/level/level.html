@@ -1,0 +1,16 @@
+<div
+		id="game-board"
+		[style.grid-template-columns]="'repeat(' + levelConfig.boardSize.width + ', 1fr)'"
+		[style.grid-template-rows]="'repeat(' + levelConfig.boardSize.height + ', 1fr)'"
+	>
+		@for (row of gameBoard(); track $index; let y = $index) { 
+      @for (cell of row; track $index; let x = $index) {
+		<div
+			class="cell"
+			[class.snake]="cell.type === 'snake'"
+			[class.snake-head]="cell.isHead"
+			[class.food]="cell.type === 'food'"
+			[class.obstacle]="cell.type === 'obstacle'"
+		></div>
+		} }
+	</div>
