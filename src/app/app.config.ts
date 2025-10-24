@@ -1,6 +1,6 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
+import { initializeApp } from "firebase/app";
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -8,5 +8,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
+    importProvidersFrom(
+      
+    )
   ]
+
 };
