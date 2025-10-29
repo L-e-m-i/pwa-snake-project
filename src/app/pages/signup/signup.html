@@ -1,1 +1,43 @@
-<p>signup works!</p>
+<div backgroundColor="primary" class="login-container">
+	<h2>Sign Up</h2>
+    <form class="login-form" [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+		
+		<mat-form-field>
+			<mat-label for="email">Email</mat-label>
+			<input matInput id="email" type="text" formControlName="email" required />
+		</mat-form-field>
+        <mat-form-field>
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" required />
+        </mat-form-field>
+		<mat-form-field>
+			<mat-label for="password">Password</mat-label>
+			<input
+				matInput
+				id="password"
+				type="password"
+				formControlName="password"
+				required
+				autocomplete="current-password"
+			/>
+		</mat-form-field>
+        <mat-form-field>
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" formControlName="confirmPassword" required />
+        </mat-form-field>
+		<button matButton="elevated" type="submit" [disabled]="signupForm.invalid">Log In</button>
+	</form>
+	Already have an account?<a routerLink="/login">Log In</a>
+
+	<!-- <hr />
+		<p>Or sign in with</p>
+		<button mat-stroked-button (click)="loginWithGoogle()">
+			<img
+				width="24"
+				height="24"
+				src="assets/icons/google.svg"
+				alt="Google sign-in"
+			/>
+			Google
+		</button> -->
+</div>

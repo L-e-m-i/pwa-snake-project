@@ -1,0 +1,16 @@
+$login_background: lightgray;
+
+.login-container {
+	max-width: fit-content;
+	margin: auto;
+    margin-top: 50vh;
+    transform: translateY(-50%);
+    padding: 30px;
+    border-radius: 10%;
+	background-color: $login_background;
+}
+
+.login-form {
+	display: flex;
+	flex-direction: column;
+}

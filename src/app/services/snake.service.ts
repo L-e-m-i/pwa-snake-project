@@ -57,10 +57,10 @@ export class SnakeService {
       case 'right':
         head.x++; break;
     }
-    console.log('Moving snake to:', head);
+
     if(level !== 'easy'){
       if(head.x < 0 || head.x >= boardSize.width || head.y < 0 || head.y >= boardSize.height){
-        console.log('Collision with wall at:', head);
+
         return {type: 'collision'}; 
       }
     }else{
@@ -96,7 +96,7 @@ export class SnakeService {
     if(currentDirection === 'down' && direction === 'up') return;
     if(currentDirection === 'left' && direction === 'right') return;
     if(currentDirection === 'right' && direction === 'left') return;
-    console.log('Changing direction to:', direction);
+
     this.snake.update(snake => ({ ...snake, direction }));
   }
 

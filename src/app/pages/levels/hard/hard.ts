@@ -5,12 +5,13 @@ import { GestureService } from '../../../services/gesture.service';
 import { GameConfig, LevelConfigService } from '../../../services/level-config.service';
 import { GameLevel, SnakeService } from '../../../services/snake.service';
 import { GameInfo } from '../../../shared/game-info/game-info';
-import { Gameover } from '../../../shared/gameover/gameover';
+import { GameOver } from '../../../shared/gameover/gameover';
 import { Level } from '../../../shared/level/level';
+import { Leaderboard } from "../../../shared/leaderboard/leaderboard";
 
 @Component({
 	selector: 'app-hard',
-	imports: [GameInfo, Gameover, Level],
+	imports: [GameInfo, GameOver, Level, Leaderboard],
 	templateUrl: './hard.html',
 	styleUrl: './hard.scss',
 })

@@ -8,7 +8,7 @@ import { GameLevel } from '../../services/snake.service';
   templateUrl: './gameover.html',
   styleUrl: './gameover.scss'
 })
-export class Gameover {
+export class GameOver {
   @Input() level!: GameLevel;
   constructor(
     protected readonly gameService: GameService

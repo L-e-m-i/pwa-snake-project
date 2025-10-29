@@ -3,6 +3,8 @@ import { SnakeService, GameLevel } from './snake.service';
 import { LevelConfigService } from './level-config.service';
 import { SwipeDirection } from './gesture.service';
 import { Position } from '../models/position';
+import { PrngService } from './prng.service';
+import { ScoreService } from './score.service';
 
 export interface GameState {
 	score: number;
@@ -10,17 +12,26 @@ export interface GameState {
 	isRunning: boolean;
 	isGameOver: boolean;
 	isPaused: boolean;
+	startTime: number; 
+    foodEatenCount: number;
+    movesCount: number; 
+    maxSnakeLength: number; 
 }
 
 @Injectable({
 	providedIn: 'root',
 })
 export class GameService {
-	constructor(private snakeService: SnakeService, private levelConfigService: LevelConfigService) {}
+	constructor(
+		private snakeService: SnakeService,
+		private levelConfigService: LevelConfigService,
+		private prngService: PrngService,
+		private scoreService: ScoreService
+	) {}
 
 	private food = signal<Position>({ x: 5, y: 5 });
 	private obstacles = signal<Position[]>([]);
-
+	private seed = signal<number>(Date.now());
 	initializeObstacles(boardSize: { width: number; height: number }, level: GameLevel): void {
 		console.log('Initializing obstacles for level:', level);
 		if (level !== 'hard') {
@@ -29,12 +40,19 @@ export class GameService {
 			return;
 		}
 		const newObstacles: Position[] = [];
-		const obstacleCount = 10;
-		while (newObstacles.length < obstacleCount) {
+		const obstacleCount = 12;
+		let idx = 0;
+		let x: number = 1;
+		let y: number = 2;
+		while (idx < obstacleCount) {
+			idx++;
 			const obstacle = {
-				x: Math.floor(Math.random() * boardSize.width),
-				y: Math.floor(Math.random() * boardSize.height),
+				x: x,
+				y: y,
 			};
+			
+			x == 1 ? x = 8 : x = 1;
+			x % 2 === 1 ? y+=3 : y;
 
 			if (
 				!newObstacles.some((o) => o.x === obstacle.x && o.y === obstacle.y) &&
@@ -53,13 +71,21 @@ export class GameService {
 
 	generateFood(boardSize: { width: number; height: number }, snakeBody: Position[]): void {
 		let newFood: Position;
+		const random = this.prngService.mulberry32(this.seed());
 		do {
 			newFood = {
-				x: Math.floor(Math.random() * boardSize.width),
-				y: Math.floor(Math.random() * boardSize.height),
+				x: Math.floor(random() * boardSize.width),
+				y: Math.floor(random() * boardSize.height),
 			};
-		} while (snakeBody.some((segment) => segment.x === newFood.x && segment.y === newFood.y));
+			
+		} while (
+            snakeBody.some((segment) => segment.x === newFood.x && segment.y === newFood.y) ||
+            this.obstacles().some((o) => o.x === newFood.x && o.y === newFood.y)
+        );
 
+		this.seed.update((s) => s + 1);
+		
+		console.log('Generated food position:', newFood);
 		this.food.set(newFood);
 		this.snakeService.setFood(newFood);
 	}
@@ -73,6 +99,10 @@ export class GameService {
 		isRunning: false,
 		isGameOver: false,
 		isPaused: false,
+		startTime: 0,
+		foodEatenCount: 0,
+		movesCount: 0,
+		maxSnakeLength: 0,
 	});
 
 	private directionChanged = signal(false);
@@ -93,6 +123,10 @@ export class GameService {
 			isRunning: false,
 			isGameOver: false,
 			isPaused: false,
+			startTime: 0,
+			foodEatenCount: 0,
+			movesCount: 0,
+			maxSnakeLength: 0,
 		});
 		this.directionChanged.set(false);
 		this.snakeService.reset();
@@ -118,6 +152,10 @@ export class GameService {
 			isRunning: true,
 			isGameOver: false,
 			isPaused: false,
+			startTime: Date.now(),
+			foodEatenCount: 0,
+			movesCount: 0,
+			maxSnakeLength: this.snakeService.snake().body.length,
 		});
 		this.directionChanged.set(false);
 
@@ -137,6 +175,17 @@ export class GameService {
 
 	gameOver(): void {
 		this.stopGameLoop();
+
+		const finalState = this.state();
+		const gameDurationMs = Date.now() - finalState.startTime;
+		this.scoreService.saveScore(
+			finalState.score,
+			finalState.level,
+			gameDurationMs,
+			finalState.maxSnakeLength,
+			finalState.foodEatenCount,
+			finalState.movesCount
+		);
 		this.obstacles.set([]);
 		this.snakeService.setObstacles([]);
 		this.gameState.update((state) => ({
@@ -157,22 +206,41 @@ export class GameService {
         this.obstacles.set([]);
         this.snakeService.setObstacles([]);
 
-        this.gameState.update((state) => ({ ...state, score: 0 }));
+        this.gameState.update((state) => ({ 
+			...state,
+			score: 0,
+			startTime: 0, 
+            foodEatenCount: 0, 
+            movesCount: 0, 
+            maxSnakeLength: 0, 
+		}));
 	}
 
 	private addScore(points: number): void {
-		this.gameState.update((state) => ({ ...state, score: state.score + points }));
+		this.gameState.update((state) => ({ 
+			...state, 
+			score: state.score + points,
+			foodEatenCount: state.foodEatenCount + 1,
+			maxSnakeLength: Math.max(state.maxSnakeLength, this.snakeService.snake().body.length),
+		}));
+
 	}
 
 	private startGameLoop(): void {
 		const config = this.levelConfig();
-
+		this.seed.set(Date.now());
 		const gameLoop = () => {
 			if (!this.isActive()) {
 				return;
 			}
 
 			this.directionChanged.set(false);
+
+			this.gameState.update(state => ({
+                ...state,
+                maxSnakeLength: Math.max(state.maxSnakeLength, this.snakeService.snake().body.length),
+                movesCount: state.movesCount + 1,
+            }));
 
 			const gameEvent = this.snakeService.moveSnake(config.boardSize, this.state().level);
 

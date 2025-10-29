@@ -7,12 +7,12 @@ import { CellType } from '../../../models/celltype';
 import { GameLevel } from '../../../services/snake.service';
 import { GameInfo } from '../../../shared/game-info/game-info';
 import { Leaderboard } from '../../../shared/leaderboard/leaderboard';
-import { Gameover } from '../../../shared/gameover/gameover';
+import { GameOver } from '../../../shared/gameover/gameover';
 import { Level } from '../../../shared/level/level';
 
 @Component({
 	selector: 'app-medium',
-	imports: [GameInfo, Gameover, Level],
+	imports: [GameInfo, GameOver, Level, Leaderboard],
 	templateUrl: './medium.html',
 	styleUrl: './medium.scss',
 })

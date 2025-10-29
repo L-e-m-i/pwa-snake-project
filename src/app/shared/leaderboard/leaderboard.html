@@ -1,1 +1,29 @@
-<p>leaderboard works!</p>
+<div class="leaderboard-container">
+	<h3>Leaderboard</h3>
+	@if(loading()){
+	<mat-spinner></mat-spinner>
+
+	} @else if (scores().length === 0) {
+	<p>No scores saved yet.</p>
+	} @else {
+
+	<table class="scores-table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Score</th>
+				<th>User</th>
+			</tr>
+		</thead>
+		<tbody>
+			@for (score of scores(); track $index) {
+			<tr>
+				<td>{{ $index + 1 }}</td>
+				<td>{{ score.score }}</td>
+				<td>{{ score.username }}</td>
+			</tr>
+			}
+		</tbody>
+	</table>
+	}
+</div>

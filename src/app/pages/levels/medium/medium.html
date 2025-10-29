@@ -4,6 +4,6 @@
 
 	@if (gameService.state().isGameOver) {
 	<app-gameover [level]="level"></app-gameover>
-    <!-- <app-leaderboard></app-leaderboard> -->
+    <app-leaderboard [level]="level"></app-leaderboard>
 	}
 </div>

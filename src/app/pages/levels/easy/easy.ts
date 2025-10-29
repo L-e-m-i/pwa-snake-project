@@ -9,8 +9,9 @@ import {
 import { GameLevel, SnakeService } from '../../../services/snake.service';
 import { GameService } from '../../../services/game.service';
 import { GameInfo } from '../../../shared/game-info/game-info';
-import { Gameover } from '../../../shared/gameover/gameover';
+import { GameOver } from '../../../shared/gameover/gameover';
 import { Level } from '../../../shared/level/level';
+import { Leaderboard } from "../../../shared/leaderboard/leaderboard";
 
 @Component({
 	selector: 'app-easy',
@@ -18,7 +19,7 @@ import { Level } from '../../../shared/level/level';
 	styleUrl: './easy.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 
-	imports: [GameInfo, Gameover, Level],
+	imports: [GameInfo, GameOver, Level, Leaderboard],
 })
 export class Easy {
 	protected readonly level: GameLevel = 'easy';
