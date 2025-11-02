@@ -12,6 +12,7 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { firebaseConfig } from '../environments/environment';
 import { provideServiceWorker } from '@angular/service-worker';
+import { getFunctions, provideFunctions } from '@angular/fire/functions';
 
 export const appConfig: ApplicationConfig = {
 	providers: [
@@ -25,5 +26,6 @@ export const appConfig: ApplicationConfig = {
 			enabled: !isDevMode(),
 			registrationStrategy: 'registerWhenStable:30000',
 		}),
+		provideFunctions(() => getFunctions())
 	],
 };

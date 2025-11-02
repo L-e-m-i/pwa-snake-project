@@ -14,6 +14,12 @@ import {
 	writeBatch,
 } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import {
+	Functions,
+	HttpsCallable,
+	httpsCallable,
+	HttpsCallableResult,
+} from '@angular/fire/functions';
 
 @Injectable({
 	providedIn: 'root',
@@ -23,9 +29,9 @@ export class ScoreService {
 	private readonly indexedDbService = inject(IndexedDbService);
 	private readonly firestore = inject(Firestore);
 	private readonly authService = inject(AuthService);
+	private readonly functions = inject(Functions);
 
 	constructor() {
-
 		effect(() => {
 			if (this.authService.user()) {
 				console.log('User is logged in. Attempting to sync scores.');
@@ -36,7 +42,9 @@ export class ScoreService {
 		});
 	}
 
-	private async generateHash(data: Omit<ScoreData, 'hash' | 'isSynced' | 'userId'>): Promise<string> {
+	private async generateHash(
+		data: Omit<ScoreData, 'hash' | 'isSynced' | 'userId' | 'id'>
+	): Promise<string> {
 		const dataString = JSON.stringify({
 			score: data.score,
 			level: data.level,
@@ -62,7 +70,7 @@ export class ScoreService {
 		foodEatenCount: number,
 		movesCount: number
 	): Promise<void> {
-		const rawData: Omit<ScoreData, 'hash' | 'isSynced' | 'userId'> = {
+		const rawData: Omit<ScoreData, 'hash' | 'isSynced' | 'userId' | 'id'> = {
 			score,
 			level,
 			date: Date.now(),
@@ -72,15 +80,19 @@ export class ScoreService {
 			movesCount,
 		};
 		const hash = await this.generateHash(rawData);
-		const finalScore: Omit<ScoreData, 'userId'> = { ...rawData, hash, isSynced: false };
+		const finalScore: Omit<ScoreData, 'userId' | 'id'> = { ...rawData, hash, isSynced: false };
 
 		await this.indexedDbService.addScore(finalScore);
 		console.log(`Score saved locally (${finalScore.level}).`);
 	}
 
-	private async markScoresAsSynced(scores: ScoreData[]): Promise<void> {
-		const ids = scores.map((s) => s.userId!).filter((id): id is number => id !== undefined);
-		return this.indexedDbService.markScoresAsSynced(ids);
+	private async markScoresAsSynced(scores: ScoreData[], syncedIds: number[]): Promise<void> {
+		const validScoresToMark = scores.filter((s) => s.id && syncedIds.includes(s.id));
+		if (validScoresToMark.length === 0) {
+			return;
+		}
+
+		await this.indexedDbService.markScoresAsSynced(validScoresToMark);
 	}
 
 	public async attemptSync(): Promise<void> {
@@ -98,18 +110,32 @@ export class ScoreService {
 		if (navigator.onLine) {
 			console.log(`Attempting to sync ${unsyncedScores.length} scores...`);
 			try {
-				const batch = writeBatch(this.firestore);
-				const scoreCollection = collection(this.firestore, 'Scores');
+				const syncScores = httpsCallable(this.functions, 'syncScores');
+				const result: HttpsCallableResult = await syncScores({ scores: unsyncedScores });
 
-				for (const score of unsyncedScores) {
-					const scoreDocRef = doc(scoreCollection);
-					const { userId, isSynced, ...scoreForFirestore } = score;
-					batch.set(scoreDocRef, { ...scoreForFirestore, userId: user.uid });
+				const data = result.data as { success: boolean; syncedIds: number[] };
+
+				if (data.success && data.syncedIds.length > 0) {
+					await this.markScoresAsSynced(unsyncedScores, data.syncedIds);
+					console.log(
+						`Sync successful: ${data.syncedIds.length} scores validated and marked as synced.`
+					);
+				} else {
+					console.warn('Sync complete, but server did not validate any new scores.');
 				}
 
-				await batch.commit();
-				await this.markScoresAsSynced(unsyncedScores);
-				console.log(`Sync successful: ${unsyncedScores.length} scores uploaded.`);
+				// const batch = writeBatch(this.firestore);
+				// const scoreCollection = collection(this.firestore, 'Scores');
+
+				// for (const score of unsyncedScores) {
+				// 	const scoreDocRef = doc(scoreCollection);
+				// 	const { userId, isSynced, ...scoreForFirestore } = score;
+				// 	batch.set(scoreDocRef, { ...scoreForFirestore, userId: user.uid });
+				// }
+
+				// await batch.commit();
+				// await this.markScoresAsSynced(unsyncedScores);
+				// console.log(`Sync successful: ${unsyncedScores.length} scores uploaded.`);
 			} catch (error) {
 				console.error('Sync failed:', error);
 			}

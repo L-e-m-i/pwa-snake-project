@@ -51,10 +51,10 @@ export class IndexedDbService {
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(this.storeName, 'readwrite');
 			const store = transaction.objectStore(this.storeName);
-			const scoreToStore: StoredScoreData = {
-                ...score,
-                isSynced: score.isSynced ? 1 : 0,
-            };
+			const scoreToStore: Omit<StoredScoreData, 'id'> = {
+				...score,
+				isSynced: score.isSynced ? 1 : 0,
+			};
 			const request = store.add(scoreToStore);
 
 			request.onsuccess = () => {
@@ -74,7 +74,7 @@ export class IndexedDbService {
 		});
 	}
 
-	public async getAllScores(): Promise<ScoreData[]> {
+	/*public async getAllScores(): Promise<ScoreData[]> {
 		const db = await this.openDb();
 		return new Promise((resolve, reject) => {
 			const transaction = db.transaction(this.storeName, 'readonly');
@@ -102,7 +102,7 @@ export class IndexedDbService {
 			transaction.oncomplete = () => db.close();
 			transaction.onerror = (event) => reject((event.target as IDBTransaction).error);
 		});
-	}
+	}*/
 
 	public async getUnsyncedScores(): Promise<ScoreData[]> {
 		const db = await this.openDb();
@@ -134,8 +134,8 @@ export class IndexedDbService {
 		});
 	}
 
-	public async markScoresAsSynced(ids: number[]): Promise<void> {
-		if (ids.length === 0) {
+	public async markScoresAsSynced(scores: ScoreData[]): Promise<void> {
+		if (scores.length === 0) {
 			return Promise.resolve();
 		}
 
@@ -145,7 +145,8 @@ export class IndexedDbService {
 			const transaction = db.transaction(this.storeName, 'readwrite');
 			const store = transaction.objectStore(this.storeName);
 
-			for (const id of ids) {
+			for (const score of scores) {
+				const id = score.id;
 				const getRequest = store.get(id);
 
 				getRequest.onsuccess = (event) => {

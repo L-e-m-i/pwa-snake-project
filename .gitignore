@@ -42,7 +42,7 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-.env
+environments/environments.ts
 # Firebase
 .firebase
 *-debug.log

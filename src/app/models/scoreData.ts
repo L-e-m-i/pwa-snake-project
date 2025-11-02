@@ -12,4 +12,5 @@ export interface ScoreData {
 	movesCount: number; 
 	hash: string; 
 	isSynced: boolean; 
+	id: number;
 }
